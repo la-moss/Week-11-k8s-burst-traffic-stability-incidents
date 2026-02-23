@@ -1,8 +1,20 @@
-# Week 1 - Kubernetes Incident Lab (Runtime-Only)
+# Week 11 - Kubernetes Incident Lab
 
-This lab simulates a production incident set around resource governance and service stability.
+## Scenario Context
 
-You investigate using live runtime signals and fix manifests until verification passes.
+A service degradation has occurred in a Kubernetes environment.
+
+Workloads are failing intermittently
+
+Error rates have increased
+
+Resource behaviour is inconsistent
+
+Deployment state appears healthy at first glance
+
+The incident is unfolding across multiple related profiles.
+
+Your role: restore stability using only runtime investigation.
 
 ## Start Here
 
