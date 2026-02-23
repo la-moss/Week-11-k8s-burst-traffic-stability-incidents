@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: incident-lab
+  labels:
+    app: api
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: python:3.11-alpine
+          envFrom:
+            - configMapRef:
+                name: api-config
+          env:
+            - name: ALLOCATE_MB
+              value: "40"
+          command: ["python", "-u", "-c"]
+          args:
+            - |
+              import os
+              import urllib.request
+              from http.server import BaseHTTPRequestHandler, HTTPServer
+              worker_url = os.getenv("WORKER_URL", "http://worker:8080/")
+              reqs = int(os.getenv("REQUESTS_PER_CALL", "1"))
+              alloc_mb = int(os.getenv("ALLOCATE_MB", "40"))
+              class H(BaseHTTPRequestHandler):
+                  def do_GET(self):
+                      if self.path == "/healthz":
+                          self.send_response(200); self.end_headers(); self.wfile.write(b"ok"); return
+                      _buf = bytearray(alloc_mb * 1024 * 1024)
+                      for _ in range(reqs):
+                          try:
+                              with urllib.request.urlopen(worker_url, timeout=3.0) as r:
+                                  r.read()
+                          except Exception:
+                              self.send_response(504)
+                              self.end_headers()
+                              self.wfile.write(b"timeout")
+                              return
+                      self.send_response(200)
+                      self.end_headers()
+                      self.wfile.write(b"ok")
+                  def log_message(self, fmt, *args): pass
+              HTTPServer(("0.0.0.0", 8080), H).serve_forever()
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 3
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

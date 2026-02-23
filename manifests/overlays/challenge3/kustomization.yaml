@@ -1,0 +1,4 @@
+resources:
+  - ../../base
+patches:
+  - path: api-sidecar-patch.yaml

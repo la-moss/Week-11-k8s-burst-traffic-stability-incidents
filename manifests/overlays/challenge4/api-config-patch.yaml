@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: incident-lab
+data:
+  REQUESTS_PER_CALL: "3"

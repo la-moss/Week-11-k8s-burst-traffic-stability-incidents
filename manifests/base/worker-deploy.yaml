@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: incident-lab
+  labels:
+    app: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+        - name: worker
+          image: python:3.11-alpine
+          env:
+            - name: WORK_MS
+              value: "120"
+          command: ["python", "-u", "-c"]
+          args:
+            - |
+              import os
+              import time
+              from http.server import BaseHTTPRequestHandler, HTTPServer
+              work_ms = int(os.getenv("WORK_MS", "120"))
+              class H(BaseHTTPRequestHandler):
+                  def do_GET(self):
+                      if self.path == "/healthz":
+                          self.send_response(200); self.end_headers(); self.wfile.write(b"ok"); return
+                      end = time.time() + (work_ms / 1000.0)
+                      x = 0
+                      while time.time() < end:
+                          x += 1
+                      self.send_response(200)
+                      self.end_headers()
+                      self.wfile.write(b"ok")
+                  def log_message(self, fmt, *args): pass
+              HTTPServer(("0.0.0.0", 8080), H).serve_forever()
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 3
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

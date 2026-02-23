@@ -1,0 +1,7 @@
+resources:
+  - namespace.yaml
+  - api-config.yaml
+  - worker-deploy.yaml
+  - worker-svc.yaml
+  - api-deploy.yaml
+  - api-svc.yaml

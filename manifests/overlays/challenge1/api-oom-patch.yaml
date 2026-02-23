@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: incident-lab
+spec:
+  template:
+    spec:
+      containers:
+        - name: api
+          env:
+            - name: ALLOCATE_MB
+              value: "180"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "64Mi"

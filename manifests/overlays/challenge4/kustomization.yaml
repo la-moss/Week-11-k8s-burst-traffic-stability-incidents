@@ -1,0 +1,5 @@
+resources:
+  - ../../base
+patches:
+  - path: api-capacity-patch.yaml
+  - path: api-config-patch.yaml

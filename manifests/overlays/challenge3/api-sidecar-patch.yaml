@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: incident-lab
+spec:
+  template:
+    spec:
+      containers:
+        - name: api
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+        - name: noisy-sidecar
+          image: python:3.11-alpine
+          env:
+            - name: BURST_MB
+              value: "220"
+          command: ["python", "-u", "-c"]
+          args:
+            - |
+              import os
+              import time
+              burst_mb = int(os.getenv("BURST_MB", "220"))
+              while True:
+                  _b = bytearray(burst_mb * 1024 * 1024)
+                  time.sleep(0.2)
+                  del _b
+                  time.sleep(0.2)
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"

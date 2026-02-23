@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: incident-lab
+spec:
+  template:
+    spec:
+      containers:
+        - name: worker
+          env:
+            - name: WORK_MS
+              value: "300"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "50m"
+              memory: "256Mi"
